@@ -1,0 +1,72 @@
+# application-design.yml
+# qor-dm based on IFEX Core IDL — WHAT the app exposes (protocol-agnostic)
+name: radar
+version: 1.0.2
+
+# NOTE:
+# Transport-specific items (service_id, method_id, event_id, endpoints, QoS) are
+# intentionally NOT part of the Core IDL. They live under deployment (see deploy.yml).
+# This keeps the API re-usable across transports.
+namespaces:
+  - name: app
+    description: Public API for Radar application
+    interface:
+      name: radar.v1
+      version_major: 1        # maps to Communication Catalog: services[].version_major
+      description: Radar processing interface
+      methods:
+        - name: get_frame
+          description: Get a processed radar frame for a region of interest
+          input:
+            - name: roi
+              datatype: Roi
+          returns:
+            - name: frame
+              datatype: bytes
+        - name: set_fps
+          description: Configure target frames-per-second
+          input:
+            - name: value
+              datatype: Fps_t
+          returns: []
+      events:
+        - name: fault
+          description: Emitted on hardware or software fault conditions
+          input:
+            - name: code
+              datatype: fault_t
+            - name: message
+              datatype: string
+      properties:
+        - name: fps
+          description: Current target frames per second
+          datatype: Fps_t
+
+    typedefs:
+      - name: Fps_t
+        datatype: uint16
+      - name: amplitude_t
+        datatype: uint16
+
+    structs:
+      - name: Roi
+        fields:
+          - name: x
+            datatype: uint16
+          - name: y
+            datatype: uint16
+          - name: width
+            datatype: uint16
+          - name: height
+            datatype: uint16
+
+    enumerations:
+      - name: fault_t
+        datatype: uint16
+        options:
+          - name: NONE
+            value: 0
+          - name: HW
+            value: 1
+          - name: SW
+            value: 2

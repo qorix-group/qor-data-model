@@ -1,0 +1,52 @@
+# machine.yaml
+# Machine / Hardware topology — WHERE it can run
+filetype: Machine Manifest
+schema: machine.schema.yaml
+version: 1.0.0
+
+# Network topology (origin: Communication Catalog -> networks[])
+networks:
+  - id: veh-eth0
+    type: ethernet
+    vlan: 100
+    mtu: 1500
+    ipv4_cidr: 10.0.0.0/24
+    gateway: 10.0.0.1
+    dhcp: false
+    # Multicast range used by events (origin: services[].events[].multicast)
+    multicast_pools:
+      - 239.10.0.0/24
+
+machines:
+  - id: carA
+    os:
+      class: linux
+      distro: ubuntu-24.04
+      kernel: 6.8
+    # Assign host IP on veh-eth0 (origin: services[].provider.endpoints[].address)
+    interfaces:
+      - network: veh-eth0
+        ipv4: 10.0.0.10
+    devices:
+      - id: soc0
+        class: SoC
+        manufacturer: Acme
+        model: X1
+        devices:
+          - id: cpu0
+            class: cpu
+            reg: [0]
+            coreGroups:
+              - name: big
+                cores: [0,1,2,3]
+              - name: little
+                cores: [4,5,6,7]
+          - id: gpu0
+            class: gpu
+            manufacturer: Acme
+            model: GX-200
+    resources:
+      - type: segment
+        name: sysmem
+      - type: segment
+        name: vram

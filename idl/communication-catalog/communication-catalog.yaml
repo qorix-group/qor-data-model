@@ -1,0 +1,126 @@
+# communication-catalog.yml
+# Central catalog of network/transport assignments, service IDs, endpoints, and QoS.
+filetype: CommunicationCatalog
+schema: communication-catalog.schema.yaml
+version: 1.0.0
+
+metadata:
+  project: radar
+  owner: systems-team
+  generated_from:
+    - deploy.yml
+    - core-idl.yml
+    - machine.yml
+
+networks:
+  - id: veh-eth0
+    type: ethernet
+    vlan: 100
+    mtu: 1500
+    ipv4_cidr: 10.0.0.0/24
+    gateway: 10.0.0.1
+    dhcp: false
+
+transports:
+  - name: someip
+    sd:
+      enabled: true
+      initial_delay_ms: 50
+      repetition_base_delay_ms: 200
+      repetition_max: 3
+      ttl_s: 3
+    serialization: cbor
+    defaults:
+      rpc_protocol: tcp
+      event_protocol: udp
+
+services:
+  - interface: app.radar.v1
+    version_major: 1
+    transport: someip
+    service_id: 0x1234
+
+    provider:
+      instance: radar-1
+      process: radar-proc
+      machine: carA
+      network: veh-eth0
+      endpoints:
+        - role: rpc
+          protocol: tcp
+          address: 10.0.0.10
+          port: 30490
+        - role: event
+          protocol: udp
+          multicast: 239.10.0.1
+          port: 30500
+          ttl: 1
+
+    methods:
+      - name: get_frame
+        method_id: 0x0001
+        rpc:
+          protocol: tcp
+          address: 10.0.0.10
+          port: 30490
+        qos:
+          timeout_ms: 500
+          retries: 2
+          max_payload_bytes: 1048576
+      - name: set_fps
+        method_id: 0x0002
+        rpc:
+          protocol: tcp
+          address: 10.0.0.10
+          port: 30490
+        qos:
+          timeout_ms: 250
+          retries: 1
+          max_payload_bytes: 4096
+
+    events:
+      - name: fault
+        event_id: 0x8001
+        multicast:
+          address: 239.10.0.1
+          port: 30500
+          ttl: 1
+        qos:
+          reliability: best-effort
+          history: last
+          rate_limit_hz: 20
+
+bindings:
+  - interface: app.radar.v1
+    instance: radar-1
+    service_id: 0x1234
+    mapping:
+      rpc:
+        protocol: tcp
+        address: 10.0.0.10
+        port: 30490
+      event:
+        protocol: udp
+        multicast: 239.10.0.1
+        port: 30500
+
+security:
+  tls:
+    enabled: false
+  access_control:
+    - subject: any
+      action: allow
+      resource: "app.radar.v1.*"
+
+consumers:
+  - name: viz-proc
+    machine: carA
+    network: veh-eth0
+    subscriptions:
+      - interface: app.radar.v1
+        instance: radar-1
+        methods:
+          - get_frame
+          - set_fps
+        events:
+          - fault

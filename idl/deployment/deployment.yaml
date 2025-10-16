@@ -1,0 +1,107 @@
+# deploy.yml
+# Deployment / Placement / Wiring — HOW it runs and communicates
+filetype: Deployment
+schema: deployment.schema.yaml
+version: 1.0.0
+
+# Transport profile (origin: Communication Catalog -> transports[])
+transports:
+  - name: someip
+    sd:
+      enabled: true
+      initial_delay_ms: 50
+      repetition_base_delay_ms: 200
+      repetition_max: 3
+      ttl_s: 3
+    serialization: cbor
+    defaults:
+      rpc_protocol: tcp
+      event_protocol: udp
+
+processes:
+  - name: radar-proc
+    machine: carA
+    # Bind to machine interface/network (origin: services[].provider.network)
+    network: veh-eth0
+
+    runtime:
+      language: cpp
+      std: c++20
+
+    # Service provisioning (origin: services[])
+    service:
+      provides:
+        - interface: app.radar.v1
+          instance: radar-1
+
+          # Transport-specific mapping for this provider (origin: services[])
+          someip:
+            service_id: 0x1234              # origin: services[].service_id
+            version_major: 1                # mirrors core-idl interface.version_major
+            endpoints:
+              # RPC endpoint for methods (origin: services[].provider.endpoints[role=rpc])
+              rpc:
+                protocol: tcp               # origin: transports[].defaults.rpc_protocol
+                address: 10.0.0.10          # origin: services[].provider.endpoints[].address
+                port: 30490                 # origin: services[].provider.endpoints[].port
+              # Event endpoint (origin: services[].provider.endpoints[role=event])
+              event:
+                protocol: udp               # origin: transports[].defaults.event_protocol
+                multicast: 239.10.0.1       # origin: services[].provider.endpoints[].multicast
+                port: 30500                 # origin: services[].provider.endpoints[].port
+                ttl: 1                      # origin: services[].provider.endpoints[].ttl
+
+            # Per-method mapping (origin: services[].methods[])
+            methods:
+              - name: get_frame
+                method_id: 0x0001           # origin: services[].methods[].method_id
+                qos:
+                  timeout_ms: 500           # origin: services[].methods[].qos
+                  retries: 2
+                  max_payload_bytes: 1048576
+              - name: set_fps
+                method_id: 0x0002
+                qos:
+                  timeout_ms: 250
+                  retries: 1
+                  max_payload_bytes: 4096
+
+            # Per-event mapping (origin: services[].events[])
+            events:
+              - name: fault
+                event_id: 0x8001
+                qos:
+                  reliability: best-effort
+                  history: last
+                  rate_limit_hz: 20
+
+    # Execution placement (unchanged; relates to machine topology)
+    engine:
+      id: radar-engine
+      coreGroup: big
+      policy: fifo
+      priority: high
+      threads: 4
+
+    # Timer wiring example
+    timers:
+      - id: sweep
+        class: periodic
+        period: 50ms
+        offset: 0ms
+        # Can trigger the fault event path (demo)
+        event: app.radar.v1.fault
+
+instances:
+  - id: radar-1
+    application: app
+    configuration:
+      fps: 25
+    # Effective wire for client connections (optional; mirrors comm-catalog.bindings[])
+    connections:
+      - port: app.radar.v1.get_frame
+        carrier: someip
+        endpoint:
+          protocol: tcp
+          address: 10.0.0.10
+          port: 30490
