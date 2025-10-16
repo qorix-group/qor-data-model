@@ -13,7 +13,7 @@ It replaces complex ARXML trees with clean, layered YAML/JSON definitions.
 ### 1.2 Goals
 - Provide a generic, extensible model for service-oriented applications and communication systems.  
 - Enable **AI-assisted**, schema-aware design and validation.  
-- Ensure **bidirectional compatibility** with AUTOSAR and Qorix Performance data models.  
+- Ensure **bidirectional compatibility** with Qorix Adaptive and Performance data models.  
 - Support human-readable, machine-validatable formats.
 
 ### 1.3 Scope
@@ -260,7 +260,7 @@ programs:
 
 ## 9️ Middleware Mapping
 
-### AUTOSAR Adaptive
+### Qorix Adaptive
 | qor-dm Concept | ARXML Element | Notes |
 |---------------|----------------|-------|
 | `interface` | `<SERVICE-INTERFACE>` | 1:1 |
@@ -270,7 +270,7 @@ programs:
 | `process` | `<EXECUTION-MANIFEST>` | Binding |
 | `behavior` | `<APPLICATION-DESIGN>` | Derived |
 
-### Eclipse S-Core
+### Qorix Performance
 | qor-dm Concept | Performance Equivalent | Notes |
 |---------------|-------------------|-------|
 | `interface` | Interface JSON | Identical |
