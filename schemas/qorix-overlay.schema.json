@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://qorix.dev/schemas/qorix-overlay.schema.json",
+  "title": "Qorix Overlay / Layer (mergeable)",
+  "type": "object",
+  "additionalProperties": false,
+  "allOf": [{ "$ref": "qorix-core-idl.schema.json" }],
+  "properties": {
+    "namespaces": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          { "$ref": "qorix-core-idl.schema.json#/$defs/Namespace" },
+          {
+            "properties": {
+              "name": { "type": "string", "pattern": "^[+\\-]?[A-Za-z_][A-Za-z0-9_\\-]*$" }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

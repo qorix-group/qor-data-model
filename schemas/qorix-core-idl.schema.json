@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://qorix.dev/schemas/qorix-core-idl.schema.json",
+  "title": "Qorix Core IDL (IFEX-concept compatible)",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "Qorix Core IDL mirrors IFEX core concepts (Namespace, Interface, Method, Event, Property, Types).",
+  "properties": {
+    "filetype": { "type": "string", "const": "Qorix Core IDL" },
+    "schema": { "type": "string", "format": "uri-reference" },
+    "name": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_\\-\\.]*$" },
+    "description": { "type": "string" },
+    "major_version": { "type": "integer", "minimum": 0 },
+    "minor_version": { "type": "integer", "minimum": 0 },
+    "includes": { "type": "array", "items": { "$ref": "#/definitions/Include" } },
+    "namespaces": { "type": "array", "items": { "$ref": "#/definitions/Namespace" } }
+  },
+  "required": ["namespaces"],
+  "definitions": {
+    "Identifier": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_\\-]*$" },
+    "DatatypeRef": {
+      "type": "string",
+      "markdownDescription": "Fundamental or defined type. Arrays with [] allowed; variant<...> allowed.\n\nCommon: uint8, int8, uint16, int16, uint32, int32, uint64, int64, boolean, float, double, string, set<...>, map<key,value>, variant<a,b,c>, opaque",
+      "examples": ["uint8", "string", "position_t", "MyStruct[]", "variant<string,MyStruct>"]
+    },
+    "Argument": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "datatype": { "$ref": "#/definitions/DatatypeRef" },
+        "description": { "type": "string" },
+        "arraysize": { "type": "integer", "minimum": 1 },
+        "range": { "type": "string" }
+      },
+      "required": ["name", "datatype"]
+    },
+    "Error": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "datatype": { "$ref": "#/definitions/DatatypeRef" },
+        "description": { "type": "string" },
+        "arraysize": { "type": "integer", "minimum": 1 },
+        "range": { "type": "string" }
+      },
+      "required": ["datatype"]
+    },
+    "Method": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "description": { "type": "string" },
+        "input": { "type": "array", "items": { "$ref": "#/definitions/Argument" } },
+        "output": { "type": "array", "items": { "$ref": "#/definitions/Argument" } },
+        "returns": { "type": "array", "items": { "$ref": "#/definitions/Argument" } },
+        "errors": { "type": "array", "items": { "$ref": "#/definitions/Error" } }
+      },
+      "required": ["name"]
+    },
+    "Event": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "description": { "type": "string" },
+        "input": { "type": "array", "items": { "$ref": "#/definitions/Argument" } }
+      },
+      "required": ["name"]
+    },
+    "Property": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "datatype": { "$ref": "#/definitions/DatatypeRef" },
+        "description": { "type": "string" },
+        "arraysize": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["name", "datatype"]
+    },
+    "Member": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "datatype": { "$ref": "#/definitions/DatatypeRef" },
+        "description": { "type": "string" },
+        "arraysize": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["name", "datatype"]
+    },
+    "Struct": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "description": { "type": "string" },
+        "members": { "type": "array", "items": { "$ref": "#/definitions/Member" } }
+      },
+      "required": ["name"]
+    },
+    "Option": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "value": {},
+        "description": { "type": "string" }
+      },
+      "required": ["name", "value"]
+    },
+    "Enumeration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "datatype": { "$ref": "#/definitions/DatatypeRef" },
+        "options": { "type": "array", "items": { "$ref": "#/definitions/Option" } },
+        "description": { "type": "string" }
+      },
+      "required": ["name", "datatype", "options"]
+    },
+    "Typedef": {
+      "type": "object",
+      "additionalProperties": false,
+      "oneOf": [
+        { "required": ["datatype"] },
+        { "required": ["datatypes"] }
+      ],
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "datatype": { "$ref": "#/definitions/DatatypeRef" },
+        "datatypes": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+        "description": { "type": "string" },
+        "arraysize": { "type": "integer", "minimum": 1 },
+        "min": { "type": "integer" },
+        "max": { "type": "integer" }
+      },
+      "required": ["name"]
+    },
+    "Include": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "file": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["file"]
+    },
+    "Interface": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "description": { "type": "string" },
+        "major_version": { "type": "integer", "minimum": 0 },
+        "minor_version": { "type": "integer", "minimum": 0 },
+        "version_label": { "type": "string" },
+        "events": { "type": "array", "items": { "$ref": "#/definitions/Event" } },
+        "methods": { "type": "array", "items": { "$ref": "#/definitions/Method" } },
+        "typedefs": { "type": "array", "items": { "$ref": "#/definitions/Typedef" } },
+        "includes": { "type": "array", "items": { "$ref": "#/definitions/Include" } },
+        "structs": { "type": "array", "items": { "$ref": "#/definitions/Struct" } },
+        "enumerations": { "type": "array", "items": { "$ref": "#/definitions/Enumeration" } },
+        "properties": { "type": "array", "items": { "$ref": "#/definitions/Property" } },
+        "namespaces": { "type": "array", "items": { "$ref": "#/definitions/Namespace" } }
+      },
+      "required": ["name"]
+    },
+    "Namespace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/definitions/Identifier" },
+        "description": { "type": "string" },
+        "major_version": { "type": "integer", "minimum": 0 },
+        "minor_version": { "type": "integer", "minimum": 0 },
+        "version_label": { "type": "string" },
+        "events": { "type": "array", "items": { "$ref": "#/definitions/Event" } },
+        "methods": { "type": "array", "items": { "$ref": "#/definitions/Method" } },
+        "typedefs": { "type": "array", "items": { "$ref": "#/definitions/Typedef" } },
+        "includes": { "type": "array", "items": { "$ref": "#/definitions/Include" } },
+        "structs": { "type": "array", "items": { "$ref": "#/definitions/Struct" } },
+        "enumerations": { "type": "array", "items": { "$ref": "#/definitions/Enumeration" } },
+        "properties": { "type": "array", "items": { "$ref": "#/definitions/Property" } },
+        "namespaces": { "type": "array", "items": { "$ref": "#/definitions/Namespace" } },
+        "interface": { "$ref": "#/definitions/Interface" }
+      },
+      "required": ["name"]
+    }
+  }
+}

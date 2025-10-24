@@ -2,6 +2,19 @@
 ### Unified, Schema-Agnostic Data Model for Application & Communication Design
 *(Supporting Qorix Adaptive and Performance Middleware)*
 
+# Table of Contents
+- [Vision & Motivation](#1️-vision--motivation)
+- [What qor-dm Adds to IFEX](#2️-what-qor-dm-adds-to-ifex)
+- [Core Concept — Schema-Agnostic Abstraction](#3️-core-concept--schema-agnostic-abstraction)
+- [Unified Application & Communication Design](#4️-unified-application--communication-design)
+- [Design Principles](#5️-design-principles)
+- [Mapping to Qorix Adaptive](#6️-mapping-to-qorix-adaptive)
+- [Mapping to Qorix Performance](#7️-mapping-to-qorix-performance)
+- [Design Principles](#8️-developer-experience)
+- [AI-Assisted Design Integration](#9️-ai-assisted-design-integration)
+- [Summary — The Unified IFEX Vision](#10-summary--the-unified-ifex-vision)
+- [Outlook](#11-outlook)
+
 ---
 
 ## 1️ Vision & Motivation
@@ -70,6 +83,7 @@ By layering, qor-dm separates responsibilities cleanly while enabling automatic 
 4. **Cross-Middleware Portability:** Shared transport block (`someip`, `grpc`, etc.).
 5. **Declarative Behavior:** Control flow graphs replace static function chains.
 
+![IFEX Core Concept](./images/IFEX.png)
 ---
 
 ## 6️ Mapping to Qorix Adaptive
